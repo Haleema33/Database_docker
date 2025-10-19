@@ -21,7 +21,9 @@ services:
     volumes:
       - ./app:/app
     environment:
-      DATABASE_URL: postgresql+psycopg2://myuser:mypassword@db:5432/mydb
+      DATABASE_URL: postgresql+psycopg2://myuser:mypassword@postgres_db:5432/mydb
+    ports:
+    - "8000:8000"
     command: ["bash", "/app/start.sh"] # keeping the app container alive
 
 

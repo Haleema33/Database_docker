@@ -1,6 +1,9 @@
 # Use Python 3.11
 FROM python:3.11-slim
 
+# Install PostgreSQL client for pg_isready
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
 
