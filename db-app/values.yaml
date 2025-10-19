@@ -1,8 +1,8 @@
 app:
   name: db-app
   image:
-    repository: repo-name
-    tag: repo-tag
+    repository: haleema22/dockes_files01-app
+    tag: latest
     pullPolicy: IfNotPresent
   port: 8000
   env:
