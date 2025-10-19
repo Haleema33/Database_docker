@@ -20,6 +20,8 @@ spec:
         imagePullPolicy: {{ .Values.app.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.app.port }}
+        command: ["bash"]
+        args: ["/app/app/start.sh"]
         env:
         - name: DATABASE_URL
           value: {{ .Values.app.env.DATABASE_URL }}
