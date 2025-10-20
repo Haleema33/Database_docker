@@ -1,0 +1,23 @@
+name: Validate Helm and YAML Files
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+    paths:
+      - 'db-app/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Lint Helm Chart
+        run: helm lint ./db-app
+
+      - name: Validate YAML Syntax
+        run: yamllint db-app/templates
