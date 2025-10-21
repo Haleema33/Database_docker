@@ -1,0 +1,37 @@
+name: Deploy with Helm
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'db-app/**'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.29.0'
+
+      - name: Set kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" > ~/.kube/config
+
+      - name: Deploy Helm Chart
+        run: |
+          helm upgrade --install db-app ./db-app \
+          --namespace myesi \
+          --set app.image.repository=haleema22/dockes_files01-app \
+          --set app.image.tag=latest
