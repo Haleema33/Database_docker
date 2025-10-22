@@ -1,10 +1,18 @@
 name: Validate Helm and YAML Files
 
 on:
-  pull_request:
-    branches: [ main, dev ]
+  push:
+    branches: [ feature/**, bugfix/**, hotfix/** ]
     paths:
-      - 'db-app/**'
+      - 'charts/**'
+      - 'values.yaml'
+      - 'Chart.yaml'
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - 'charts/**'
+      - 'values.yaml'
+      - 'Chart.yaml'
 
 jobs:
   lint:
@@ -16,8 +24,11 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
 
-      - name: Lint Helm Chart
-        run: helm lint ./db-app
+      - name: Lint umbrella chart
+        run: helm lint .
+
+      - name: Install yamllint
+        run: pip install yamllint
 
       - name: Validate YAML Syntax
-        run: yamllint db-app/templates
+        run: yamllint charts/

@@ -1,12 +1,12 @@
-name: Deploy with Helm
+name: Deploy MyESI Infrastructure
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - 'db-app/**'
-      - '.github/workflows/deploy.yml'
+      - 'charts/**'
+      - 'values.yaml'
+      - 'Chart.yaml'
 
 jobs:
   deploy:
@@ -19,19 +19,22 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v3
 
-      - name: Configure kubectl
+      - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.29.0'
 
-      - name: Set kubeconfig
+      - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" > ~/.kube/config
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > ~/.kube/config
 
-      - name: Deploy Helm Chart
+      - name: Helm dependency update
+        run: helm dependency update .
+
+      - name: Deploy umbrella chart
         run: |
-          helm upgrade --install db-app ./db-app \
+          helm upgrade --install myesi-infra . \
           --namespace myesi \
-          --set app.image.repository=haleema22/dockes_files01-app \
-          --set app.image.tag=latest
+          --create-namespace \
+          --wait --atomic

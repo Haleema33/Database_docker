@@ -1,0 +1,6 @@
+apiVersion: v2
+name: myesi-infra
+description: Helm umbrella chart for MyESI microservices (API Gateway, User Service, DB, etc.)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

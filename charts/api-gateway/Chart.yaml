@@ -1,0 +1,6 @@
+apiVersion: v2
+name: myesi-api-gateway
+description: API Gateway for MyESI
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

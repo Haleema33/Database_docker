@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myesi-api-gateway
+  namespace: myesi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myesi-api-gateway
+  template:
+    metadata:
+      labels:
+        app: myesi-api-gateway
+    spec:
+      containers:
+      - name: api-gateway
+        image: {{ .Values.gateway.image }}
+        imagePullPolicy: {{ .Values.gateway.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.gateway.port }}
+        env:
+        - name: DATABASE_URL
+          value: {{ .Values.gateway.env.DATABASE_URL }}
+        - name: REDIS_URL
+          value: {{ .Values.gateway.env.REDIS_URL }}
+        - name: USER_SERVICE_URL
+          value: {{ .Values.gateway.env.USER_SERVICE_URL }}
+        - name: SBOM_SERVICE_URL
+          value: {{ .Values.gateway.env.SBOM_SERVICE_URL }}
+        - name: SECRET_KEY
+          value: {{ .Values.gateway.env.SECRET_KEY }}
+        command: ["uvicorn", "app.main:app",
+                    "--host", "0.0.0.0",
+                    "--port", "{{ .Values.gateway.port }}",
+                    "--ssl-certfile", "{{ .Values.gateway.tlsCertPath }}",
+                    "--ssl-keyfile", "{{ .Values.gateway.tlsKeyPath }}"]
+        volumeMounts:
+          - name: tls-certs
+            mountPath: /app/certs
+            readOnly: true
+        resources:
+          requests:
+            memory: {{ .Values.gateway.resources.requests.memory }}
+            cpu: {{ .Values.gateway.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.gateway.resources.limits.memory }}
+            cpu: {{ .Values.gateway.resources.limits.cpu }}
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: {{ .Values.gateway.tlsSecretName }}
