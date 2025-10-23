@@ -1,0 +1,41 @@
+---
+name: Deploy MyESI Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "charts/**"
+      - "values.yaml"
+      - "Chart.yaml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.29.0"
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > ~/.kube/config
+
+      - name: Helm dependency update
+        run: helm dependency update .
+
+      - name: Deploy umbrella chart
+        run: |
+          helm upgrade --install myesi-infra . \
+          --namespace myesi \
+          --create-namespace \
+          --wait --atomic

@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myesi-api-gateway
+  namespace: {{.Release.Namespace | default "myesi"}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myesi-api-gateway
+  template:
+    metadata:
+      labels:
+        app: myesi-api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: {{.Values.gateway.image | default "dquang0504/myesi-api-gateway:latest"}}
+          imagePullPolicy: {{.Values.gateway.pullPolicy | default "IfNotPresent"}}
+          ports:
+            - containerPort: {{.Values.gateway.port | default 8000}}
+          env:
+            - name: DATABASE_URL
+              value: {{.Values.gateway.env.DATABASE_URL | quote}}
+            - name: REDIS_URL
+              value: {{.Values.gateway.env.REDIS_URL | quote}}
+            - name: USER_SERVICE_URL
+              value: {{.Values.gateway.env.USER_SERVICE_URL | quote}}
+            - name: SBOM_SERVICE_URL
+              value: {{.Values.gateway.env.SBOM_SERVICE_URL | quote}}
+            - name: SECRET_KEY
+              value: {{.Values.gateway.env.SECRET_KEY | quote}}
+          command:
+            - uvicorn
+            - app.main:app
+            - --host
+            - 0.0.0.0
+            - --port
+            - '{{ .Values.gateway.port | default 8000 }}'
+            - --ssl-certfile
+            - '{{ .Values.gateway.tlsCertPath | default "/app/certs/tls.crt" }}'
+            - --ssl-keyfile
+            - '{{ .Values.gateway.tlsKeyPath | default "/app/certs/tls.key" }}'
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /app/certs
+              readOnly: true
+          resources:
+            requests:
+              memory: {{.Values.gateway.resources.requests.memory | default "256Mi"}}
+              cpu: {{.Values.gateway.resources.requests.cpu | default "250m"}}
+            limits:
+              memory: {{.Values.gateway.resources.limits.memory | default "512Mi"}}
+              cpu: {{.Values.gateway.resources.limits.cpu | default "500m"}}
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: {{.Values.gateway.tlsSecretName | default "gateway-tls-secret"}}
