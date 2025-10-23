@@ -1,19 +1,18 @@
+---
 name: Validate Helm and YAML Files
-
 on:
   push:
-    branches: [ feature/**, bugfix/**, hotfix/** ]
+    branches: [feature/**, bugfix/**, hotfix/**]
     paths:
-      - 'charts/**'
-      - 'values.yaml'
-      - 'Chart.yaml'
+      - "charts/**"
+      - "values.yaml"
+      - "Chart.yaml"
   pull_request:
     branches: [develop, main]
     paths:
-      - 'charts/**'
-      - 'values.yaml'
-      - 'Chart.yaml'
-
+      - "charts/**"
+      - "values.yaml"
+      - "Chart.yaml"
 jobs:
   lint:
     runs-on: ubuntu-latest

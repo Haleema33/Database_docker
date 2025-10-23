@@ -1,12 +1,13 @@
+---
 name: Deploy MyESI Infrastructure
 
 on:
   push:
     branches: [main]
     paths:
-      - 'charts/**'
-      - 'values.yaml'
-      - 'Chart.yaml'
+      - "charts/**"
+      - "values.yaml"
+      - "Chart.yaml"
 
 jobs:
   deploy:
@@ -22,7 +23,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.29.0'
+          version: "v1.29.0"
 
       - name: Configure kubeconfig
         run: |

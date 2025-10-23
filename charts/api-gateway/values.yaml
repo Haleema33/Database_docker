@@ -1,14 +1,15 @@
+---
 gateway:
   image: dquang0504/myesi-api-gateway:latest
   port: 8000
   pullPolicy: Always
   resources:
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: 512Mi
+      cpu: 500m
     requests:
-      memory: "256Mi"
-      cpu: "100m"
+      memory: 256Mi
+      cpu: 100m
   env:
     DATABASE_URL: postgresql+psycopg2://myesi:123456789@postgres:5432/myesi_db
     REDIS_URL: redis://redis:6379/0

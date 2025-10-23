@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -18,9 +19,9 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: {{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}
+          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
           ports:
-            - containerPort: {{ .Values.postgres.port }}
+            - containerPort: {{.Values.postgres.port | default 5432}}
           env:
             - name: POSTGRES_DB
               valueFrom:
@@ -42,11 +43,11 @@ spec:
               mountPath: /var/lib/postgresql/data
           resources:
             requests:
-              memory: {{ .Values.postgres.resources.requests.memory }}
-              cpu: {{ .Values.postgres.resources.requests.cpu }}
+              memory: '{{ .Values.postgres.resources.requests.memory | default "256Mi" }}'
+              cpu: '{{ .Values.postgres.resources.requests.cpu | default "250m" }}'
             limits:
-              memory: {{ .Values.postgres.resources.limits.memory }}
-              cpu: {{ .Values.postgres.resources.limits.cpu }}
+              memory: '{{ .Values.postgres.resources.limits.memory | default "512Mi" }}'
+              cpu: '{{ .Values.postgres.resources.limits.cpu | default "500m" }}'
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage
@@ -54,4 +55,4 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: {{ .Values.postgres.storage.size }}
+            storage: '{{ .Values.postgres.storage.size | default "1Gi" }}'

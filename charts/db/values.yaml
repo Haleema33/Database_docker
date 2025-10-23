@@ -1,10 +1,11 @@
+---
 postgres:
   enabled: true
   image:
     repository: postgres
     tag: "15"
   port: 5432
-  database: 
+  database:
     name: "myesi_db"
     user: "myesi"
     password: "123456789"
