@@ -1,0 +1,16 @@
+---
+user:
+  image: dquang0504/myesi-user-service:latest
+  port: 8001
+  pullPolicy: IfNotPresent
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+  env:
+    DATABASE_URL: postgresql+psycopg2://myesi:123456789@postgres:5432/myesi_db
+    REDIS_URL: redis://redis:6379/0
+    SECRET_KEY: replace-with-secure-key

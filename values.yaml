@@ -1,0 +1,51 @@
+---
+global:
+  namespace: myesi
+
+myesi-api-gateway:
+  gateway:
+    image: dquang0504/myesi-api-gateway:latest
+    port: 8000
+    pullPolicy: Always
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+    env:
+      DATABASE_URL: postgresql+psycopg2://myesi:123456789@postgres:5432/myesi_db
+      REDIS_URL: redis://redis:6379/0
+      USER_SERVICE_URL: http://myesi-user-service:8001
+      SBOM_SERVICE_URL: http://myesi-sbom-service:8002
+
+myesi-user-service:
+  user:
+    image: dquang0504/myesi-user-service:latest
+    port: 8001
+    pullPolicy: Always
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+    env:
+      DATABASE_URL: postgresql+psycopg2://myesi:123456789@postgres:5432/myesi_db
+      REDIS_URL: redis://redis:6379/0
+
+myesi-db:
+  enabled: true
+  postgres:
+    image:
+      repository: postgres
+      tag: "15"
+    database:
+      name: myesi_db
+      user: myesi
+      password: "123456789"
+    port: 5432
+    storage:
+      size: 1Gi

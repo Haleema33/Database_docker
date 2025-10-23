@@ -1,6 +1,6 @@
 ## CI/CD Workflows
 
-This repository uses **GitHub Actions** for continuous integration and deployment.  
+This repository uses **GitHub Actions** for continuous integration and deployment.
 The following workflows are defined under `.github/workflows/`:
 
 | Workflow | File | Description |
