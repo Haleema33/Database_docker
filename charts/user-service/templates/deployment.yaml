@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myesi-user-service
+  namespace: myesi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myesi-user-service
+  template:
+    metadata:
+      labels:
+        app: myesi-user-service
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox
+          command: ['sh', '-c', 'until nc -z postgres 5432; do echo "Waiting for postgres..."; sleep 2; done;']
+      containers:
+        - name: user-service
+          image: {{.Values.user.image}}
+          imagePullPolicy: {{.Values.user.pullPolicy}}
+          ports:
+            - containerPort: {{.Values.user.port}}
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: DATABASE_URL
+              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)
+            - name: REDIS_URL
+              value: {{.Values.user.env.REDIS_URL}}
+            - name: SECRET_KEY
+              value: {{.Values.user.env.SECRET_KEY}}
+          resources:
+            requests:
+              memory: {{.Values.user.resources.requests.memory}}
+              cpu: {{.Values.user.resources.requests.cpu}}
+            limits:
+              memory: {{.Values.user.resources.limits.memory}}
+              cpu: {{.Values.user.resources.limits.cpu}}

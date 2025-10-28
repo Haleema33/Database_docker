@@ -1,0 +1,33 @@
+---
+name: Validate Helm and YAML Files
+on:
+  push:
+    branches: [feature/**, bugfix/**, hotfix/**]
+    paths:
+      - "charts/**"
+      - "values.yaml"
+      - "Chart.yaml"
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "charts/**"
+      - "values.yaml"
+      - "Chart.yaml"
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Lint umbrella chart
+        run: helm lint .
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Validate YAML Syntax
+        run: yamllint charts/

@@ -1,0 +1,7 @@
+---
+apiVersion: v2
+name: myesi-redis
+description: Redis cache for MyESI
+type: application
+version: 0.1.0
+appVersion: '7'

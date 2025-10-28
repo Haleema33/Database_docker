@@ -1,0 +1,22 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myesi-api-gateway
+  namespace: myesi
+spec:
+  tls:
+    - hosts:
+        - myesi.local
+      secretName: myesi-api-gateway-tls
+  rules:
+    - host: myesi.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: myesi-api-gateway
+                port:
+                  number: 80
