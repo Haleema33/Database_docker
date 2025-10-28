@@ -1,37 +1,63 @@
-Prometheus Metrics + Alerts
-Overview
+# Prometheus Metrics + Alerts
 
-This task implements monitoring and alerting for the MyESI API Gateway. It collects metrics from FastAPI and Redis, exposes them via Prometheus, and sends alerts using Alertmanager for specific conditions such as high error rates or rate limit violations.
+## Overview
 
-Features Implemented
+This repository implements monitoring and alerting for the MyESI API Gateway. It collects metrics from FastAPI and Redis, exposes them via Prometheus, and sends alerts using Alertmanager for specific conditions such as high error rates or rate limit violations.
 
-API Performance Metrics: Request counts, request latency, status codes.
+Key capabilities:
+- Collect API performance metrics (counts, latency, status codes)
+- Collect Redis usage and health metrics
+- Track and alert on HTTP 500 errors and failed requests
+- Alert on rate-limit violations
+- Expose metrics via a Prometheus-compatible endpoint: `/metrics`
+- Centralized visualization via Grafana
 
-Redis Metrics: Redis usage and health.
+---
 
-Error Monitoring: Tracks HTTP 500 errors and failed requests.
+## Features Implemented
 
-Alerts: Configured in Prometheus + Alertmanager to notify on:
+- **API Performance Metrics**
+  - Request counts
+  - Request latency (histograms / summaries)
+  - Status code breakdown (2xx, 4xx, 5xx)
 
-Excessive HTTP 500 errors
+- **Redis Metrics**
+  - Redis exporter metrics (memory, connections, commands/sec, etc.)
+  - Redis health/availability monitoring
 
-Rate-limit hits
+- **Error Monitoring**
+  - Detect and track HTTP 500s and other failed requests
 
-Prometheus Metrics Endpoint: /metrics exposed by FastAPI.
+- **Alerts**
+  - Excessive HTTP 500 error rate
+  - High rate-limit hits (clients exceeding configured limits)
+  - Alerts evaluated by Prometheus and routed via Alertmanager
 
-Centralized Dashboard: View all metrics in Grafana.
+- **Prometheus Metrics Endpoint**
+  - FastAPI exposes `/metrics` for Prometheus scraping
 
-Technology Stack
-Tool	Purpose
-Prometheus	Collects service metrics from FastAPI and Redis.
-Alertmanager	Sends alerts when thresholds are exceeded.
-FastAPI instrumentation	Exposes metrics like response time and status codes.
-Redis Exporter	Provides metrics about Redis performance and usage.
-Docker Compose	Orchestrates FastAPI, Redis, Prometheus, Alertmanager, and Redis Exporter.
-Architecture
+- **Dashboards**
+  - Grafana dashboards to visualize latency, throughput, error rates, and Redis health
+
+---
+
+## Technology Stack
+
+| Tool | Purpose |
+|------|---------|
+| Prometheus | Collects service metrics from FastAPI and Redis; evaluates alerting rules |
+| Alertmanager | Receives alerts from Prometheus and dispatches notifications (email, Slack, etc.) |
+| FastAPI instrumentation | Exposes runtime metrics such as response time and status codes on `/metrics` |
+| Redis Exporter | Exposes Redis performance and usage metrics to Prometheus |
+| Docker Compose | Orchestrates FastAPI, Redis, Redis Exporter, Prometheus, Alertmanager, (and optionally Grafana) |
+
+---
+
+## Architecture
+
 FastAPI (API Gateway)
     │
-    ├─ exposes /metrics → Prometheus scrapes it
+    ├─ exposes `/metrics` → Prometheus scrapes it
     │
 Redis
     ├─ monitored via Redis Exporter → Prometheus scrapes metrics
@@ -44,48 +70,76 @@ Prometheus
 Alertmanager
     └─ receives alerts from Prometheus and can notify via configured channels (e.g., email, Slack)
 
-Docker Compose Setup
+Grafana (optional)
+    └─ visualizes metrics collected in Prometheus (dashboards for latency, errors, Redis, etc.)
+
+---
+
+## Docker Compose Setup
 
 Start all services:
-
+```bash
 docker-compose up -d
+```
 
+Services and default ports:
 
-Services and Ports:
+| Service | Port |
+|---------|------|
+| FastAPI App | 8000 |
+| Redis | 6379 |
+| Redis Exporter | 9121 |
+| Prometheus | 9090 |
+| Alertmanager | 9093 |
+| Grafana (optional) | 3000 |
 
-Service	Port
-FastAPI App	8000
-Redis	6379
-Redis Exporter	9121
-Prometheus	9090
-Alertmanager	9093
+Note: Ports may be configured differently in your `docker-compose.yml`. Check that file if you see different values.
 
-Prometheus Configuration Files:
+---
 
-monitoring/prometheus.yml → scrape targets
+## Prometheus & Alertmanager Configuration
 
-monitoring/alert_rules.yml → alert definitions
+Prometheus loads scraping targets and alerting rules from the monitoring configuration directory.
 
-Alertmanager Configuration File:
+- monitoring/prometheus.yml → scrape targets (FastAPI `/metrics`, Redis Exporter)
+- monitoring/alert_rules.yml → alert definitions (HTTP 500 spikes, rate-limit breaches)
+- monitoring/alertmanager.yml → Alertmanager routing and notification channels (email, Slack, etc.)
 
-monitoring/alertmanager.yml → alert routing and notification channels
+Example Prometheus scrape target snippets (for reference):
+```yaml
+scrape_configs:
+  - job_name: 'myesi-api'
+    static_configs:
+      - targets: ['fastapi:8000']
 
-How to Test
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+```
 
-Access FastAPI:
+Example alert rule descriptions (stored in `monitoring/alert_rules.yml`):
+- High HTTP 500 error rate over a sustained period
+- Frequent rate-limit hits from clients
+- Redis down or memory/connection thresholds exceeded
 
+---
+
+## How to Test
+
+1. Access the FastAPI application:
+```bash
 curl http://localhost:8000/
+```
 
+2. Check Prometheus targets and scrape health:
+- Prometheus Targets: http://localhost:9090/targets
+- Prometheus Graph / Query UI: http://localhost:9090/graph
 
-Check Prometheus metrics:
+3. Check Alertmanager UI:
+- http://localhost:9093
 
-http://localhost:9090/targets
-http://localhost:9090/graph
+4. Trigger alerts:
+- Generate many failing requests (HTTP 500) to the API to trigger the "excessive HTTP 500" alert.
+- Exceed configured rate limits by repeatedly calling endpoints to trigger rate-limit alerts.
+- Monitor Alertmanager to see incoming alerts and their routing/notifications.
 
-
-Check Alertmanager:
-
-http://localhost:9093
-
-
-Trigger alerts by generating multiple errors or exceeding rate limits to see them in Alertmanager.
